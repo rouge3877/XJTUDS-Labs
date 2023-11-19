@@ -1,0 +1,111 @@
+#include <iostream>
+
+template <typename DataType>
+class MyStack
+{
+private:
+    DataType *_data;
+    int _top;
+    int _capability;
+
+public:
+    DataType _data_sum;
+    MyStack(int size)
+    {
+        _data = new DataType[size];
+        _top = -1;
+        _capability = size;
+        _data_sum = 0;
+    }
+    ~MyStack()
+    {
+        delete[] _data;
+    }
+    bool isEmpty()
+    {
+        return _top == -1;
+    }
+    bool isFull()
+    {
+        return _top == _capability - 1;
+    }
+    void push(DataType x)
+    {
+        if (isFull()) {
+            std::cout << "Stack is full!" << std::endl;
+            return;
+        }
+        _data[++_top] = x;
+        _data_sum += x;
+    }
+    DataType pop()
+    {
+        if (isEmpty()) {
+            std::cout << "Stack is empty!" << std::endl;
+            return NULL;
+        }
+        _data_sum -= _data[_top];
+        return _data[_top--];
+    }
+    DataType getTop()
+    {
+        if (isEmpty()) {
+            std::cout << "Stack is empty!" << std::endl;
+            return NULL;
+        }
+        return _data[_top];
+    }
+    void printElement()
+    {
+        if (isEmpty()) {
+            std::cout << "Stack is empty!" << std::endl;
+            return;
+        }
+        for (int i = 0; i < _top + 1; i++)
+            printf("Element%d is %d\n", i + 1, _data[i]);
+    }
+};
+
+template <typename GoodsVolumeType>
+void ReadData(GoodsVolumeType *volume, int goods_num)
+{
+    for (int i = 0; i < goods_num; i++) {
+        std::cin >> volume[i];
+    }
+}
+
+template <typename GoodsVolumeType>
+void SolvePackageProblem(GoodsVolumeType *volume, int goods_num, int T)
+{
+    MyStack<int> my_package = MyStack<int>(goods_num);
+    for (int index = 0; index < goods_num; index++) {
+        
+        while (index < goods_num || !my_package.isEmpty()) {
+            if (my_package._data_sum < T) {
+                my_package.push(volume[index++]);
+            } else if (my_package._data_sum == T) {
+                my_package.printElement();
+                my_package.pop();
+                index++;
+            } else {
+                my_package.pop();
+                index++;
+            }
+        }
+        
+    }
+    my_package.~MyStack();
+}
+
+int main()
+{
+    // read data
+    int T, goods_num;
+    std::cin >> T >> goods_num;
+    int *volume = new int[goods_num];
+    ReadData(volume, goods_num);
+
+    SolvePackageProblem(volume, goods_num, T);
+
+    return 0;
+}
