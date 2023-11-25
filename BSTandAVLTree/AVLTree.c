@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #define MAX(A, B) A > B ? A : B
 #define MAX_INPUT 10000
 
@@ -132,53 +134,135 @@ void layerOrderPut(avl root)
     }
 }
 
-int getData(int **data)
+int getData(int **data, FILE *input_file)
 {
     *data = (int *)malloc(sizeof(int) * MAX_INPUT);
     int count = 0;
     int tmp;
-    char c;
-    printf("请输入数列，以回车结束：\n");
 
-    while (scanf("%d", &tmp)) { // 读取输入的数字
-        (*data)[count++] = tmp; // 存入数组
-        c = getchar();          // 看下一个字符是否是'\n'
-        if (c == '\n') {
-            break; // 如果是'\n'，则结束输入
+    if (input_file == stdin) {
+        char c;
+        fprintf(stdout, "Please input array with enter as END: \n");
+
+        while (scanf("%d", &tmp)) { // 读取输入的数字
+            (*data)[count++] = tmp; // 存入数组
+            c = getchar();          // 看下一个字符是否是'\n'
+            if (c == '\n') {
+                break; // 如果是'\n'，则结束输入
+            }
         }
+        return count;
+    } else {
+        while (fscanf(input_file, "%d", &tmp) == 1) {
+            // 如果读取到换行符，就跳出循环
+            char ch;
+            fscanf(input_file, "%c", &ch);
+            if (ch == '\n' || feof(input_file)) {
+                break;
+            }
+            (*data)[count] = tmp;
+            count++;
+        }
+        return count;
     }
-    return count;
 }
 
-void question1(avl *T, int *count_ptr)
+char *getAbsolutePath(const char *filename)
 {
-    printf("-------------QUESTION 1-------------\n");
+    char buf[1024];
+    getcwd(buf, sizeof(buf));
+    char *path = (char *)malloc(1024 * sizeof(1024));
+    strcpy(path, buf);
+    strcat(path, "/");
+    strcat(path, filename);
+    return path;
+}
+
+void question1(avl *T, int *count_ptr, FILE *input, FILE *output)
+{
+    fprintf(output, "-------------QUESTION 1-------------\n");
     int *data;
-    *count_ptr = getData(&data); // 获得数列数据和数列长度
-    for (int i = 0; i < *count_ptr; i++) {
-        *T = insertNode(*T, data[i]);
+    *count_ptr = getData(&data, input); // 获得数列数据和数列长度
+    if (output != stdout) {
+        fprintf(output, "Input from the input file: ");
+        for (int i = 0; i < *count_ptr; i++)
+            fprintf(output, "%d ", data[i]);
+        fprintf(output, "\n");
+    } else if (output == stdout && input != stdin) {
+        fprintf(output, "Input from the input file: ");
+        for (int i = 0; i < *count_ptr; i++)
+            fprintf(output, "%d ", data[i]);
+        fprintf(output, "\n");
     }
+
+    for (int i = 0; i < *count_ptr; i++)
+        *T = insertNode(*T, data[i]);
     return;
 }
 
-void question2(avl T, int num){
-    printf("\n");
-    printf("-------------QUESTION 2-------------\n");
+void question2(avl T, int num, FILE *output)
+{
+    fprintf(output, "\n");
+    fprintf(output, "-------------QUESTION 2-------------\n");
     double average = AverageSearchPath(T, num);
-    printf("平均查找长度：%lf\n", average);
-    
-    printf("\n----------------END.----------------\n");
+    fprintf(output, "Average Search Path: %lf\n", average);
+    fprintf(output, "\n----------------END.----------------\n");
     return;
-
 }
 
+void print_help()
+{
+    printf("Usage: main_avl [input_filename] [output_filename]\n");
+    printf("Reads numbers from input_filename and writes the results to output_filename.\n");
+    printf("If no filenames are provided, reads from standard input and writes to standard output.\n");
+}
 
-int main(void)
+int main(int argc, char *argv[])
 {
     avl root = NULL;
     int count = 0;
-    question1(&root, &count);
-    question2(root, count);
-    
+    if (argc == 2) {
+        if (strcmp(argv[1], "--help") == 0)
+            print_help();
+        else {
+            fprintf(stderr, "Missing parameters\n");
+            print_help();
+        }
+    } else if (argc == 3) {
+        FILE *input = NULL;
+        FILE *output = NULL;
+        if (strcmp(argv[1], "stdin") == 0)
+            input = stdin;
+        else {
+            char *pathin = getAbsolutePath(argv[1]);
+            input = fopen(pathin, "r");
+            if (!input) {
+                fprintf(stderr, "Unable to open input file: \"%s\".\n", argv[1]);
+                exit(1);
+            }
+        }
+
+        if (strcmp(argv[2], "stdout") == 0)
+            output = stdout;
+        else {
+            char *pathout = getAbsolutePath(argv[2]);
+            output = fopen(pathout, "w");
+            if (!output) {
+                fprintf(stderr, "Unable to open ourput file.\n");
+                exit(1);
+            }
+        }
+        if (output != stdout)
+            fprintf(output, "ANSWER OF AVL\n");
+        question1(&root, &count, input, output);
+        question2(root, count, output);
+    } else if (argc == 1) {
+        question1(&root, &count, stdin, stdout);
+        question2(root, count, stdout);
+    } else {
+        fprintf(stderr, "Missing parameters\n");
+        print_help();
+    }
+
     return 0;
 }

@@ -11,7 +11,6 @@ BSTree initBSTree(int capacity)
     return T;
 }
 
-// 二叉搜索树插入数据
 void InsertBST(BSTree T, DataType x)
 {
     int index = 0;
@@ -40,21 +39,20 @@ void CreateBST(BSTree *T, DataType *data, int n)
     }
 }
 
-void _InOrderTraverse(BSTree T, int index)
+void _InOrderTraverse(BSTree T, int index, FILE *output_way)
 {
     if (index < T->_capacity && T->_data[index] != EMPTY) {
-        _InOrderTraverse(T, 2 * index + 1);
-        printf("%d ", T->_data[index]);
-        _InOrderTraverse(T, 2 * index + 2);
+        _InOrderTraverse(T, 2 * index + 1, output_way);
+        fprintf(output_way, "%d ", T->_data[index]);
+        _InOrderTraverse(T, 2 * index + 2, output_way);
     }
 }
 
-void InOrderTraverse(BSTree T)
+void InOrderTraverse(BSTree T, FILE *output_way)
 {
-    _InOrderTraverse(T, 0);
+    _InOrderTraverse(T, 0, output_way);
 }
 
-// 计算二叉排序树T查找成功的平均查找长度
 double AverageSearchPath(BSTree T, int n)
 {
     double sum = 0;
@@ -108,20 +106,6 @@ void DeleteNode(BSTree *T, DataType key, bool *delete_success)
     _DeleteNode(T, key, 0, delete_success);
 }
 
-// 测试
-/*
-int main(void)
-{
-    int a[8] = {50, 26, 66, 22, 30, 60, 70, 68};
-    BSTree T = NULL;
-    CreateBST(&T, a, 8);
-    InOrderTraverse(T);
-
-    double res = AverageSearchPath(T, 8);
-    bool delete_success = 1;
-    DeleteNode(&T, 50, &delete_success);
-    InOrderTraverse(T);
-
-    return 0;
-}
-*/
+bool FindKey(BSTree T, DataType key){
+    
+}   

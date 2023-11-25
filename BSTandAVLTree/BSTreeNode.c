@@ -1,4 +1,3 @@
-// BSTree.c
 #include "BSTreeNode.h"
 
 // 插入节点
@@ -29,12 +28,12 @@ void CreateBST(BSTree *T, DataType *data, int n)
 }
 
 // 中序遍历
-void InOrderTraverse(BSTree T)
+void InOrderTraverse(BSTree T, FILE *output_way)
 {
     if (T != NULL) {
-        InOrderTraverse(T->_lchild);
-        printf("%d ", T->_data);
-        InOrderTraverse(T->_rchild);
+        InOrderTraverse(T->_lchild, output_way);
+        fprintf(output_way, "%d ", T->_data);
+        InOrderTraverse(T->_rchild, output_way);
     }
 }
 
@@ -60,7 +59,7 @@ double AverageSearchPath(BSTree T, int n)
 void DeleteNode(BSTree *T, DataType x, bool *delete_success)
 {
     if (*T == NULL) {
-        printf("无%d", x);
+        printf("No %d", x);
         *delete_success = 0;
         return;
     } else if (x < (*T)->_data) {
@@ -88,17 +87,6 @@ void DeleteNode(BSTree *T, DataType x, bool *delete_success)
     }
 }
 
-// 测试
-/*
-int main(void)
-{
-    int a[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    BSTree T = NULL;
-    CreateBST(&T, a, 10);
-    InOrderTraverse(T);
-
-    double res = AverageSearchPath(T, 10);
-
-    return 0;
+bool FindKey(BSTree T, DataType key){
+    
 }
-*/
