@@ -3,3 +3,6 @@ main_list: main.c BSTreeList.c BSTreeList.h
 
 main_node: main.c BSTreeNode.c BSTreeNode.h
 	gcc -o main_node main.c BSTreeNode.c
+
+main_avl: AVLTree.c
+	gcc AVLTree.c -o main_avl

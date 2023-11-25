@@ -56,7 +56,7 @@ void Polynomial::readFromFile(const char *filename)
     FILE *file = fopen(filename, "r");
 
     if (!file) {
-        printf("Unable to open file.\n");
+        fprintf(stderr, "Unable to open file.\n");
         exit(1);
     }
 
@@ -95,7 +95,7 @@ void Polynomial::readFromFile(const char *filename)
                         exp = 1;
                     }
                 } else { // 错误，应该是x
-                    printf("Error in input format.\n");
+                    fprintf(stderr, "Error in input format.\n");
                     exit(1);
                 }
             } else if (*p == 'x' || *p == 'X') { // 如果没有系数，系数应该为1
@@ -128,15 +128,16 @@ void Polynomial::readFromFile(const char *filename)
     fclose(file);
 }
 
-void Polynomial::outputPoly()
+void Polynomial::outputPoly(FILE *outputFile)
 {
-    std::cout << _head->_coef;
+
+    fprintf(outputFile, "%d", _head->_coef);
     Node *p = _head->_next;
     while (p != nullptr) {
-        std::cout << "," << p->_coef << "," << p->_exp;
+        fprintf(outputFile, ",%d,%d", p->_coef, p->_exp);
         p = p->_next;
     }
-    std::cout << std::endl;
+    fprintf(outputFile, "\n");
 }
 
 Polynomial *Polynomial::addPoly(Polynomial &poly1, Polynomial &poly2)

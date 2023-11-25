@@ -81,6 +81,6 @@ int main(void){
     node*first_node = initRing(keylist,7);
     simulate(first_node, 20,path,0);
     printPath(path,7);
-    free(path);  // Remember to free path
+    free(path);
     return 0;
 }

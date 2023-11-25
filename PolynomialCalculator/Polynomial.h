@@ -2,6 +2,7 @@
 #define POLYNOMIAL_H
 
 #include "Node.h"
+#include <iostream>
 
 class Polynomial
 {
@@ -10,7 +11,7 @@ public:
     ~Polynomial();
 
     void readFromFile(const char *filename);
-    void outputPoly();
+    void outputPoly(FILE *outputFile);
     double calcPoly(double x);
     static Polynomial *addPoly(Polynomial &poly1, Polynomial &poly2);
     static Polynomial *subPoly(Polynomial &poly1, Polynomial &poly2);

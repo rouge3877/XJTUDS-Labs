@@ -8,5 +8,6 @@
 !*.hh
 !*.old
 !Makefile
-!*.testtext
+!*.input
+!*.output
 !.gitignore
