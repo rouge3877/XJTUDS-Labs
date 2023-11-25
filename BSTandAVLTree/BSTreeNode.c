@@ -1,5 +1,5 @@
 // BSTree.c
-#include "BSTree.h"
+#include "BSTreeNode.h"
 
 //插入节点
 void InsertBST(BSTree *T, int x){
@@ -44,14 +44,15 @@ double AverageSearchPath(BSTree T, int n){
 }
 
 //删除节点
-void DeleteNode(BSTree *T, int x){
+void DeleteNode(BSTree *T, int x, _Bool * ret){
     if(*T == NULL){
-        printf("无%d\n", x);
-        return;
+        printf("无%d", x);
+        *ret = 0;
+        return ;
     } else if(x < (*T)->data){
-        DeleteNode(&(*T)->lchild, x);
+        DeleteNode(&(*T)->lchild, x, ret);
     } else if(x > (*T)->data){
-        DeleteNode(&(*T)->rchild, x);
+        DeleteNode(&(*T)->rchild, x, ret);
     } else {  // 找到该节点
         // 如果左右子树都不为空
         if((*T)->lchild && (*T)->rchild){
@@ -60,7 +61,7 @@ void DeleteNode(BSTree *T, int x){
                 tmp = tmp->rchild;  // 找到左子树的最右节点，即左子树的最大值
             }
             (*T)->data = tmp->data;  // 用该值覆盖要删除的节点
-            DeleteNode(&(*T)->lchild, tmp->data);  // 在左子树中删除该节点
+            DeleteNode(&(*T)->lchild, tmp->data, ret);  // 在左子树中删除该节点
         } else {  // 左右子树至少有一个为空
             BSTree tmp = *T;  
             if((*T)->lchild == NULL){  // 没有左子树
