@@ -66,54 +66,53 @@ void Polynomial::readFromFile(const char *filename)
         int sign = 1;
         while (*p) {
             while (*p == ' ')
-                ++p; // Skip whitespaces
+                ++p; // 跳过空白字符
             int coef = 0, exp = 0;
-            if (*p == '-') { // Negative sign
+            if (*p == '-') { // 处理负号
                 sign = -1;
                 ++p;
-            } else if (*p == '+') { // Positive sign
+            } else if (*p == '+') { // 处理正号
                 sign = 1;
                 ++p;
             }
-            while (*p >= '0' && *p <= '9') { // Coefficient
+            while (*p >= '0' && *p <= '9') { // 系数
                 coef = coef * 10 + (*p - '0');
                 ++p;
             }
             coef *= sign;
 
-            if (*p == '*') { // Multiplication sign, x should follow
+            if (*p == '*') { // 处理乘号
                 ++p;
                 if (*p == 'x' || *p == 'X') {
                     ++p;
-                    if (*p == '^') { // Exponentiation sign, exponent should follow
+                    if (*p == '^') { // 乘幂号，指数应该跟在后面
                         ++p;
-                        while (*p >= '0' && *p <= '9') { // Exponent
+                        while (*p >= '0' && *p <= '9') { // 指数
                             exp = exp * 10 + (*p - '0');
                             ++p;
                         }
-                    } else { // If no exponent is present, it should be 1
+                    } else { // 没有指数时，指数应该为1
                         exp = 1;
                     }
-                } else { // Error, x expected after *
+                } else { // 错误，应该是x
                     printf("Error in input format.\n");
                     exit(1);
                 }
-            } else if (*p == 'x' || *p == 'X') { // If no coefficient is present, assume it's 1
+            } else if (*p == 'x' || *p == 'X') { // 如果没有系数，系数应该为1
                 coef = sign;
                 ++p;
-                if (*p == '^') { // Exponentiation sign, exponent should follow
+                if (*p == '^') { // 乘幂号，指数应该跟在后面
                     ++p;
-                    while (*p >= '0' && *p <= '9') { // Exponent
+                    while (*p >= '0' && *p <= '9') { // 指数
                         exp = exp * 10 + (*p - '0');
                         ++p;
                     }
-                } else { // If no exponent is present, it should be 1
+                } else { // 如果没有指数，指数应该为1
                     exp = 1;
                 }
             }
 
-            // Inserting into polynomial
-            // Skip the term whose coefficient is zero
+            // 插入项，同时如果系数为0，跳过
             if (coef != 0) {
                 Node *cur = _head;
                 while (cur->_next && cur->_next->_exp > exp)
