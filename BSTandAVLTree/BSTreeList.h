@@ -2,23 +2,22 @@
 #define _BSTREE_LIST_H
 
 #include <stdio.h>
-#include<stdlib.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#define MAX_CAPACITY 1024
+#define EMPTY -1
 
-#define MAX_SIZE 1000
-#define EMPTY -1001
+typedef int DataType;
 
-typedef struct node{
-    bool exist;  // Existence of node
-    int data;  // Node data
-} BSTNode;
+typedef struct BST{
+    DataType *_data;
+    int _size; // currently used size
+    int _capacity;  // total capacity
+} *BSTree;
 
-typedef BSTNode BSTree[MAX_SIZE];
-
-void CreateBST(BSTree *T, int* data, int n);
+void CreateBST(BSTree *T, DataType *data, int n);
 void InOrderTraverse(BSTree T);
 double AverageSearchPath(BSTree T, int size);
-void DeleteNode(BSTree *T, int key, bool *delete_success);
+void DeleteNode(BSTree *T, DataType key, _Bool *delete_success);
 
 #endif /*_BSTREE_LIST_H*/
-

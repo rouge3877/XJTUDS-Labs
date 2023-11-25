@@ -1,75 +1,104 @@
 // BSTree.c
 #include "BSTreeNode.h"
 
-//插入节点
-void InsertBST(BSTree *T, int x){
-    if(*T == NULL){
+// 插入节点
+void InsertBST(BSTree *T, DataType x)
+{
+    if (*T == NULL) {
         *T = (BSTree)malloc(sizeof(BSTNode));
-        (*T)->data = x;
-        (*T)->count = 1;
-        (*T)->lchild = (*T)->rchild = NULL;
-    }else if(x == (*T)->data){
-        (*T)->count++;
-    }else if(x < (*T)->data){
-        InsertBST(&((*T)->lchild), x);
-    }else{
-        InsertBST(&((*T)->rchild), x);
+        (*T)->_data = x;
+        (*T)->_count = 1;
+        (*T)->_lchild = (*T)->_rchild = NULL;
+    } else if (x == (*T)->_data) {
+        (*T)->_count++;
+    } else if (x < (*T)->_data) {
+        InsertBST(&((*T)->_lchild), x);
+    } else {
+        InsertBST(&((*T)->_rchild), x);
     }
 }
 
-//创建二叉排序树
-void CreateBST(BSTree *T, int *data, int n){
+// 创建二叉排序树
+void CreateBST(BSTree *T, DataType *data, int n)
+{
     *T = NULL;
     int i;
-    for(i = 0; i < n; i++){
+    for (i = 0; i < n; i++) {
         InsertBST(T, data[i]);
     }
 }
 
 // 中序遍历
-void InOrderTraverse(BSTree T){
-    if(T != NULL){
-        InOrderTraverse(T->lchild);
-        printf("%d ", T->data);
-        InOrderTraverse(T->rchild);
+void InOrderTraverse(BSTree T)
+{
+    if (T != NULL) {
+        InOrderTraverse(T->_lchild);
+        printf("%d ", T->_data);
+        InOrderTraverse(T->_rchild);
     }
 }
 
-// 计算平均查找路径长度
-double AverageSearchPath(BSTree T, int n){
-    if(T == NULL)
+// 计算查找长度
+double _AverageSearchPath(BSTree T, int level)
+{
+    if (T == NULL)
         return 0;
-    else
-        return ((T->count * 2 - 1) + AverageSearchPath(T->lchild, n) + AverageSearchPath(T->rchild, n)) / n;
+    double sum = 0;
+    sum += level;
+    sum += _AverageSearchPath(T->_lchild, level + 1);
+    sum += _AverageSearchPath(T->_rchild, level + 1);
+    return sum;
 }
 
-//删除节点
-void DeleteNode(BSTree *T, int x, _Bool * ret){
-    if(*T == NULL){
+// 计算平均查找长度
+double AverageSearchPath(BSTree T, int n)
+{
+    return _AverageSearchPath(T, 1) / n;
+}
+
+// 删除节点
+void DeleteNode(BSTree *T, DataType x, bool *delete_success)
+{
+    if (*T == NULL) {
         printf("无%d", x);
-        *ret = 0;
-        return ;
-    } else if(x < (*T)->data){
-        DeleteNode(&(*T)->lchild, x, ret);
-    } else if(x > (*T)->data){
-        DeleteNode(&(*T)->rchild, x, ret);
-    } else {  // 找到该节点
+        *delete_success = 0;
+        return;
+    } else if (x < (*T)->_data) {
+        DeleteNode(&(*T)->_lchild, x, delete_success);
+    } else if (x > (*T)->_data) {
+        DeleteNode(&(*T)->_rchild, x, delete_success);
+    } else { // 找到该节点
         // 如果左右子树都不为空
-        if((*T)->lchild && (*T)->rchild){
-            BSTree tmp = (*T)->lchild;
-            while(tmp->rchild){
-                tmp = tmp->rchild;  // 找到左子树的最右节点，即左子树的最大值
+        if ((*T)->_lchild && (*T)->_rchild) {
+            BSTree tmp = (*T)->_lchild;
+            while (tmp->_rchild) {
+                tmp = tmp->_rchild; // 找到左子树的最右节点，即左子树的最大值
             }
-            (*T)->data = tmp->data;  // 用该值覆盖要删除的节点
-            DeleteNode(&(*T)->lchild, tmp->data, ret);  // 在左子树中删除该节点
-        } else {  // 左右子树至少有一个为空
-            BSTree tmp = *T;  
-            if((*T)->lchild == NULL){  // 没有左子树
-                *T = (*T)->rchild;
-            } else if((*T)->rchild == NULL){  // 没有右子树
-                *T = (*T)->lchild;
+            (*T)->_data = tmp->_data;                    // 用该值覆盖要删除的节点
+            DeleteNode(&(*T)->_lchild, tmp->_data, delete_success); // 在左子树中删除该节点
+        } else {                                         // 左右子树至少有一个为空
+            BSTree tmp = *T;
+            if ((*T)->_lchild == NULL) { // 没有左子树
+                *T = (*T)->_rchild;
+            } else if ((*T)->_rchild == NULL) { // 没有右子树
+                *T = (*T)->_lchild;
             }
             free(tmp);
         }
     }
 }
+
+// 测试
+/*
+int main(void)
+{
+    int a[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    BSTree T = NULL;
+    CreateBST(&T, a, 10);
+    InOrderTraverse(T);
+
+    double res = AverageSearchPath(T, 10);
+
+    return 0;
+}
+*/

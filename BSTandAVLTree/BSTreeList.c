@@ -1,85 +1,127 @@
 #include "BSTreeList.h"
 
-void CreateBST(BSTree *T, int* data, int n) {
-    for (int i = 0; i < MAX_SIZE; i++) {
-        (*T)[i].data = EMPTY;
-        (*T)[i].exist = false;
+BSTree initBSTree(int capacity)
+{
+    BSTree T = (BSTree)malloc(sizeof(struct BST));
+    T->_data = (DataType *)malloc(sizeof(DataType) * capacity);
+    for (int i = 0; i < capacity; i++)
+        T->_data[i] = EMPTY;
+    T->_size = 0;
+    T->_capacity = capacity;
+    return T;
+}
+
+// 二叉搜索树插入数据
+void InsertBST(BSTree T, DataType x)
+{
+    int index = 0;
+
+    while (T->_data[index] != EMPTY && index < T->_capacity) {
+        if (x < T->_data[index])
+            index = 2 * index + 1; // 左孩子
+        else if (x > T->_data[index])
+            index = 2 * index + 2; // 右孩子
+        else
+            return; // BST不允许重复元素插入，故直接返回
     }
-    for (int i = 0; i < n; i++) {
-        int j = 0;
-        while ((*T)[j].exist && (*T)[j].data != data[i]) {
-            if (data[i] < (*T)[j].data) {
-                if (2 * j + 1 >= MAX_SIZE) break;
-                j = 2 * j + 1;
+
+    if (index < T->_capacity) {
+        T->_data[index] = x;
+        T->_size++;
+    }
+}
+
+void CreateBST(BSTree *T, DataType *data, int n)
+{
+    *T = initBSTree(MAX_CAPACITY);
+    int i;
+    for (i = 0; i < n; i++) {
+        InsertBST(*T, data[i]);
+    }
+}
+
+void _InOrderTraverse(BSTree T, int index)
+{
+    if (index < T->_capacity && T->_data[index] != EMPTY) {
+        _InOrderTraverse(T, 2 * index + 1);
+        printf("%d ", T->_data[index]);
+        _InOrderTraverse(T, 2 * index + 2);
+    }
+}
+
+void InOrderTraverse(BSTree T)
+{
+    _InOrderTraverse(T, 0);
+}
+
+// 计算二叉排序树T查找成功的平均查找长度
+double AverageSearchPath(BSTree T, int n)
+{
+    double sum = 0;
+    for (int i = 0; i < T->_capacity; i++) {
+        if (T->_data[i] != EMPTY) {
+            int level = 1;
+            int index = i;
+            while (index != 0) {
+                index = (index - 1) / 2;
+                level++;
+            }
+            sum += level;
+        }
+    }
+    return sum / n;
+}
+
+// 删除二叉排序树T中的关键字为key的结点
+void _DeleteNode(BSTree *T, DataType key, int index, bool *delete_success)
+{
+    if (index < (*T)->_capacity && (*T)->_data[index] != EMPTY) {
+        if (key == (*T)->_data[index]) {
+            if ((*T)->_data[2 * index + 1] == EMPTY && (*T)->_data[2 * index + 2] == EMPTY) {
+                (*T)->_data[index] = EMPTY;
+                (*T)->_size--;
+            } else if ((*T)->_data[2 * index + 1] != EMPTY && (*T)->_data[2 * index + 2] == EMPTY) {
+                (*T)->_data[index] = (*T)->_data[2 * index + 1];
+                _DeleteNode(T, (*T)->_data[2 * index + 1], 2 * index + 1, delete_success);
+            } else if ((*T)->_data[2 * index + 1] == EMPTY && (*T)->_data[2 * index + 2] != EMPTY) {
+                (*T)->_data[index] = (*T)->_data[2 * index + 2];
+                _DeleteNode(T, (*T)->_data[2 * index + 2], 2 * index + 2, delete_success);
             } else {
-                if (2 * j + 2 >= MAX_SIZE) break;
-                j = 2 * j + 2;
+                int min_index = 2 * index + 2;
+                while ((*T)->_data[min_index] != EMPTY && min_index < (*T)->_capacity) {
+                    min_index = 2 * min_index + 1;
+                }
+                min_index = (min_index - 1) / 2;
+                (*T)->_data[index] = (*T)->_data[min_index];
+                _DeleteNode(T, (*T)->_data[min_index], min_index, delete_success);
             }
-        }
-        if (!(*T)[j].exist && j < MAX_SIZE) {
-            (*T)[j].data = data[i];
-            (*T)[j].exist = true;
-        }
-    }
-}
-
-void InOrderTraverseCore(BSTree T, int position) {
-    if (T[position].exist) {
-        InOrderTraverseCore(T, 2 * position + 1);
-        printf("%d ", T[position].data);
-        InOrderTraverseCore(T, 2 * position + 2);
-    }
-}
-
-void InOrderTraverse(BSTree T){
-    InOrderTraverseCore(T, 0);
-    printf("\n");
-}
-
-double AverageSearchPath(BSTree T, int size) {
-    int count = 0, depthSum = 0;
-    for (int i = 0; i < size; i++) {
-        int position = 0;
-        int depth = 0;
-        while (T[position].exist && T[position].data != i) {
-            if (i < T[position].data) {
-                position = 2 * position + 1;
-            } else if (i > T[position].data) {
-                position = 2 * position + 2;
-            }
-            depth++;
-        }
-        if (T[position].exist && T[position].data == i) {
-            depthSum += depth;
-            count++;
-        }
-    }
-    return (double)depthSum / count;
-}
-
-void DeleteNode(BSTree *T, int key, bool *delete_success) {
-    int position = 0;
-    while ((*T)[position].exist && (*T)[position].data != key) {
-        if (key < (*T)[position].data) {
-            position = 2 * position + 1;
+        } else if (key < (*T)->_data[index]) {
+            _DeleteNode(T, key, 2 * index + 1, delete_success);
         } else {
-            position = 2 * position + 2;
+            _DeleteNode(T, key, 2 * index + 2, delete_success);
         }
-    }
-    if ((*T)[position].exist && (*T)[position].data == key) {
-        (*T)[position].data = EMPTY;
-        (*T)[position].exist = false;
-        *delete_success = true;
-        int left = 2 * position + 1;
-        int right = 2 * position + 2;
-        if ((*T)[right].exist) {
-            (*T)[position].data = (*T)[right].data;
-            DeleteNode(T, (*T)[right].data, delete_success);
-        } else if ((*T)[left].exist) {
-            (*T)[position].data = (*T)[left].data;
-            DeleteNode(T, (*T)[left].data, delete_success);
-        }
-    } else {
-        *delete_success = false;
     }
 }
+
+void DeleteNode(BSTree *T, DataType key, bool *delete_success)
+{
+    _DeleteNode(T, key, 0, delete_success);
+}
+
+// 测试
+/*
+int main(void)
+{
+    int a[8] = {50, 26, 66, 22, 30, 60, 70, 68};
+    BSTree T = NULL;
+    CreateBST(&T, a, 8);
+    InOrderTraverse(T);
+
+    double res = AverageSearchPath(T, 8);
+    bool delete_success = 1;
+    DeleteNode(&T, 50, &delete_success);
+    InOrderTraverse(T);
+
+    return 0;
+}
+*/

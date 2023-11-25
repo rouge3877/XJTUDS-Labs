@@ -2,13 +2,13 @@
 #include "BSTreeList.h"
 #define DATASIZE 1000
 
-int getData(int **);
-void question1(BSTree *, int *);
+int getData(DataType **);
+void question1(BSTree *, DataType *);
 void question2(BSTree);
 void question3(BSTree, int);
 void question4(BSTree);
 
-int main()
+int main(void)
 {
     BSTree T = NULL;
     int count = 0;
@@ -20,9 +20,9 @@ int main()
     return 0;
 }
 
-int getData(int **data)
+int getData(DataType **data)
 {
-    *data = malloc(sizeof(int) * 100); // 假设最多输入100个数，如果会超过此数，应采用动态扩展数组的方式
+    *data = (DataType*)malloc(sizeof(DataType) * 100); // 假设最多输入100个数，如果会超过此数，应采用动态扩展数组的方式
     int count = 0;
     int tmp;
     char c;
@@ -37,11 +37,10 @@ int getData(int **data)
     }
     return count;
 }
-
 void question1(BSTree *T, int *count_ptr)
 {
     printf("-------------QUESTION 1-------------\n");
-    int *data;
+    DataType *data;
     *count_ptr = getData(&data); // 获得数列数据和数列长度
     CreateBST(T, data, *count_ptr);
 
@@ -68,9 +67,9 @@ void question4(BSTree T)
     printf("\n");
     printf("-------------QUESTION 4-------------\n");
     printf("键入需要查找并删除的节点：\n");
-    int key;
+    DataType key;
     scanf("%d", &key);
-    _Bool delete_re = 1;
+    bool delete_re = 1;
     DeleteNode(&T, key, &delete_re);
     if (delete_re) {
         printf("删除%d后中序遍历：\n", key);
