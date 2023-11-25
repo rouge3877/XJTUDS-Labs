@@ -74,9 +74,9 @@ void DeleteNode(BSTree *T, DataType x, bool *delete_success)
             while (tmp->_rchild) {
                 tmp = tmp->_rchild; // 找到左子树的最右节点，即左子树的最大值
             }
-            (*T)->_data = tmp->_data;                    // 用该值覆盖要删除的节点
+            (*T)->_data = tmp->_data;                               // 用该值覆盖要删除的节点
             DeleteNode(&(*T)->_lchild, tmp->_data, delete_success); // 在左子树中删除该节点
-        } else {                                         // 左右子树至少有一个为空
+        } else {                                                    // 左右子树至少有一个为空
             BSTree tmp = *T;
             if ((*T)->_lchild == NULL) { // 没有左子树
                 *T = (*T)->_rchild;

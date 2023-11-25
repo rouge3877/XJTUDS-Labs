@@ -1,6 +1,11 @@
 // main.c
+#ifdef USE_LIST
 #include "BSTreeList.h"
-#define DATASIZE 1000
+#else
+#include "BSTreeNode.h"
+#endif
+
+#define MAX_INPUT 1000
 
 int getData(DataType **);
 void question1(BSTree *, DataType *);
@@ -22,7 +27,7 @@ int main(void)
 
 int getData(DataType **data)
 {
-    *data = (DataType*)malloc(sizeof(DataType) * 100); // 假设最多输入100个数，如果会超过此数，应采用动态扩展数组的方式
+    *data = (DataType*)malloc(sizeof(DataType) * MAX_INPUT); // 假设最多输入100个数，如果会超过此数，应采用动态扩展数组的方式
     int count = 0;
     int tmp;
     char c;

@@ -20,4 +20,4 @@ void InOrderTraverse(BSTree T);
 double AverageSearchPath(BSTree T, int size);
 void DeleteNode(BSTree *T, DataType key, _Bool *delete_success);
 
-#endif /*_BSTREE_LIST_H*/
+#endif //_BSTREE_LIST_H
