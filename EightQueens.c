@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define NUM_QUEEN 8
 
@@ -41,37 +42,37 @@ bool **createBoard(int size)
     return board;
 }
 
-void printBoard(bool **board, int size)
+void printBoard(bool **board, int size, FILE *output)
 {
     int i, j;
 
-    printf("   ");
+    fprintf(output, "   ");
     for (i = 0; i < size; i++)
-        printf("%d ", i);
-    printf("\n");
+        fprintf(output, "%d ", i);
+    fprintf(output, "\n");
 
-    printf("   ");
+    fprintf(output, "   ");
     for (i = 0; i < size; i++)
-        printf("--");
-    printf("-\n");
+        fprintf(output, "--");
+    fprintf(output, "-\n");
 
     for (i = 0; i < size; i++) {
-        printf("%d |", i);
+        fprintf(output, "%d |", i);
 
         for (j = 0; j < size; j++) {
-            printf("%c ", board[i][j] ? '#' : ' ');
+            fprintf(output, "%c ", board[i][j] ? '#' : ' ');
         }
 
-        printf("|\n");
+        fprintf(output, "|\n");
     }
 
-    printf("   ");
+    fprintf(output, "   ");
     for (i = 0; i < size; i++)
-        printf("--");
-    printf("-\n");
+        fprintf(output, "--");
+    fprintf(output, "-\n");
 }
 
-void eightQueens(void)
+void eightQueens(FILE *output)
 {
     bool **checkerboard = createBoard(NUM_QUEEN);
 
@@ -83,15 +84,38 @@ void eightQueens(void)
     bool ***res = (bool ***)malloc(sizeof(char **) * 10001);
     backTrack(NUM_QUEEN, 0, cols, diag1, diag2, checkerboard, res, &ret_index);
     for (int i = 0; i < ret_index; i++) {
-        printBoard(res[i], NUM_QUEEN);
-        printf("--------------------------\n");
+        fprintf(output, "Plan %d:\n", i + 1);
+        printBoard(res[i], NUM_QUEEN, output);
+        fprintf(output, "--------Plan %d end.--------\n\n", i + 1);
     }
-    printf("Total %d plans\n",ret_index);
+    fprintf(output, "\n*******TOTAL %d PLANS*******\n", ret_index);
     return;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    eightQueens();
+    FILE *output = NULL;
+    if (argc == 1) {
+        output = stdout;
+    } else if (argc != 2) {
+        fprintf(stderr, "Usage: %s [output_file]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    } else {
+        if (strcmp(argv[1], "--help") == 0) {
+            printf("Usage: %s [output_file]\n", argv[0]);
+            printf("If output_file is omitted, the program writes to standard output.\n");
+            exit(EXIT_SUCCESS);
+        } else {
+            output = fopen(argv[1], "w");
+            if (output == NULL) {
+                fprintf(stderr, "Error: cannot open file '%s'\n", argv[1]);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    eightQueens(output);
+    fclose(output);
+
     return 0;
 }

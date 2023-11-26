@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define MAX_SIZE 16
 #define MAX_QUEUE_SIZE 1000
 typedef int Vertex;
@@ -162,38 +163,114 @@ bool judgeExcess(Vertex from, Vertex to)
     return judge;
 }
 
-
-
-void printPath(int path[], int u) {
-    if(path[u] == -1) {
-        printf("%d ", u);
-        return;
+char *binnumToStr(int num)
+{
+    char *str = (char *)malloc(5 * sizeof(char));
+    for (int i = 0; i < 4; i++) {
+        str[3 - i] = num % 2 + '0';
+        num /= 2;
     }
-    printPath(path, path[u]);
-    printf("-> %d ", u);
+    str[4] = '\0';
+    return str;
 }
 
-void DFS(Graph graph, Vertex target, Vertex v, bool visited[], int path[]) {
-    visited[v] = true;
+char *binnumToStatus(int num)
+{
+    char *str = binnumToStr(num);
 
+    char *strategy = (char *)malloc(150 * sizeof(char));
+    for (int i = 0; i < 150; i++)
+        strategy[i] = '\0';
+    int index = 0;
+    for (int i = 0; i < 4; i++) {
+        if (i == 0) {
+            strcat(strategy, "Farmer in the ");
+            index += 13;
+        } else if (i == 1) {
+            strcat(strategy, "Wolf in the ");
+            index += 12;
+        } else if (i == 2) {
+            strcat(strategy, "Goat in the ");
+            index += 12;
+        } else if (i == 3) {
+            strcat(strategy, "Cabbage in the ");
+            index += 15;
+        }
+        if (str[i] == '0') {
+            strcat(strategy, "South bank, ");
+            index += 12;
+        } else {
+            strcat(strategy, "North bank, ");
+            index += 12;
+        }
+    }
+    strcat(strategy, " (");
+    strcat(strategy, str);
+    strcat(strategy, ")");
+    index += 19;
+    strategy[index] = '\0';
+    free(str);
+    return strategy;
+}
+
+void printPath(int path[], int u, FILE *output)
+{
+
+    if (path[u] == -1) {
+        char *strategy = binnumToStatus(u);
+        fprintf(output, "    %s", strategy);
+        free(strategy);
+        return;
+    }
+    printPath(path, path[u], output);
+    char *strategy = binnumToStatus(u);
+    fprintf(output, "\n--> %s", strategy);
+}
+
+void DFS(Graph graph, Vertex target, Vertex v, bool visited[], int path[], FILE *output)
+{
+    visited[v] = true;
+    static int count = 0;
     if (v == target) {
-        printPath(path, v);
-        printf("\n");
+        count++;
+        fprintf(output, "The farmer's strategy for crossing the river %d: \n", count);
+        fprintf(output, "*/Each line represents the status but not the Handling process/*\n");
+        fprintf(output, "--------Strategy %d begin--------\n", count);
+        printPath(path, v, output);
+        fprintf(output, "\n--------Strategy %d end--------\n\n", count);
     }
 
     for (int i = 0; i < graph->size; ++i) {
         // 如果当前节点与节点 i 相连，并且节点 i 未访问过
-        if(graph->adjMat[v][i] && !visited[i]) {
+        if (graph->adjMat[v][i] && !visited[i]) {
             path[i] = v;
-            DFS(graph, target, i, visited, path);
+            DFS(graph, target, i, visited, path, output);
         }
     }
 
     visited[v] = false; // 回溯
 }
 
-int main(void)
+int main(int argc, char const *argv[])
 {
+    FILE *output = NULL;
+    if (argc == 1) {
+        output = stdout;
+    } else if (argc != 2) {
+        fprintf(stderr, "Usage: %s [output_filename]\n", argv[0]);
+        exit(1);
+    } else {
+        if (strcmp(argv[1], "--help") == 0) {
+            fprintf(stderr, "Usage: %s [output_filename]\n", argv[0]);
+            exit(1);
+        } else {
+            output = fopen(argv[1], "w");
+            if (!output) {
+                fprintf(stderr, "Unable to open output file.\n");
+                exit(1);
+            }
+        }
+    }
 
     Graph plan = newGraphAdjMat(16);
     for (int vertex = 0b0000; vertex <= 0b1111; vertex++) {
@@ -214,16 +291,8 @@ int main(void)
     for (int i = 0; i < MAX_SIZE; i++)
         visited[i] = 0;
 
+    DFS(plan, 0b1111, 0b0000, visited, path, output);
 
-    DFS(plan, 0b1111, 0b0000, visited, path);
-    
-    // BFS(plan, 0b1111, 0b0000, path, queue, visited);
-
-    // int index = 0b1111; // 终点节点的索引
-    // while (index != -1) {
-    //     printf("%d ", plan->vertices[index]);
-    //     index = path[index];
-    // }
-    // printf("\n");
+    fclose(output);
     return 0;
 }
