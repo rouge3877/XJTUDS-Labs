@@ -88,5 +88,13 @@ void DeleteNode(BSTree *T, DataType x, bool *delete_success)
 }
 
 bool FindKey(BSTree T, DataType key){
-    
+    if (T == NULL) {
+        return false;
+    } else if (key == T->_data) {
+        return true;
+    } else if (key < T->_data) {
+        return FindKey(T->_lchild, key);
+    } else {
+        return FindKey(T->_rchild, key);
+    }
 }

@@ -107,5 +107,14 @@ void DeleteNode(BSTree *T, DataType key, bool *delete_success)
 }
 
 bool FindKey(BSTree T, DataType key){
-    
+    int index = 0;
+    while (index < T->_capacity && T->_data[index] != EMPTY) {
+        if (key == T->_data[index])
+            return true;
+        else if (key < T->_data[index])
+            index = 2 * index + 1;
+        else
+            index = 2 * index + 2;
+    }
+    return false;
 }   
