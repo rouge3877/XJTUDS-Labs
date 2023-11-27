@@ -110,4 +110,4 @@ void createMaze(pMaze maze, int seed) // 使用prim算法生成迷宫
     
 }
 
-void findMazePath(pMaze maze, Position *start, Position *destination)
+void findMazePath(pMaze maze, Position *start, Position *destination)//使用AStar算法寻找迷宫路径

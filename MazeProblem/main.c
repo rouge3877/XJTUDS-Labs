@@ -79,5 +79,16 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    // 生成迷宫
+    createMaze(maze, 0);
+    printMaze(maze, output);
+    // 找到迷宫路径
+    findMazePath(maze, &start, &destination);
+    printMazePath(maze, &start, &destination, output);
+
+    // 释放迷宫
+    destoryMaze(maze);
+    fclose(output);
+
     return 0;
 }

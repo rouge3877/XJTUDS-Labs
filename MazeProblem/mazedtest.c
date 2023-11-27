@@ -1,131 +1,159 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
 
-#define M 9
-#define N 9
-#define WALL 0
-#define SPACE 1
-#define FRONTIER 3
+#define MAX_ROW 10
+#define MAX_COL 10
 
-#define OFFSET_COUNT 4
-int offsets[OFFSET_COUNT][2] = {
-    {-1, 0},
-    {0, -1},
-    {1, 0},
-    {0, 1}};
+#define MAX_QUEUE_SIZE 100
 
-typedef struct {
-    int x, y;
-} Point;
+#define MAZE_PATH 0
+#define MAZE_WALL 1
+#define MAZE_VISITED 2
 
-typedef struct {
-    Point *data;
-    int size;
-    int capacity;
-} PointVector;
+#define GRAPH_EXIST_EDGE 1
+#define GRAPH_NO_EDGE 0
 
-void init_vector(PointVector *v)
+typedef struct Edge {
+    int _row;
+    int _col;
+} Edge, *pEdge;
+
+typedef struct Point {
+    int _x;
+    int _y;
+} Point, *pPoint;
+
+typedef struct Graph {
+    int _edgeNum;
+    int _vertexNum;
+    int **_adjMatrix;
+    pPoint *_vertexs;
+} Graph, *pGraph;
+
+typedef struct Maze {
+    int _row;
+    int _col;
+    pGraph _graph;
+} Maze, *pMaze;
+
+typedef struct Queue {
+    int _front;
+    int _rear;
+    int _size;
+    int _capacity;
+    int *_data;
+} Queue, *pQueue;
+
+pGraph createGraph(int vertexNum)
 {
-    v->size = 0;
-    v->capacity = 10;
-    v->data = (Point *)malloc(sizeof(Point) * v->capacity);
-}
-
-void push_back(PointVector *v, int x, int y)
-{
-    // 扩容
-    if (v->size >= v->capacity) {
-        v->capacity *= 2;
-        v->data = (Point *)realloc(v->data, sizeof(Point) * v->capacity);
-    }
-    // 添加元素
-    v->data[v->size].x = x;
-    v->data[v->size].y = y;
-    v->size++;
-}
-
-void erase(PointVector *v, int index)
-{
-    // 移动元素
-    for (int i = index; i < v->size - 1; i++) {
-        v->data[i] = v->data[i + 1];
-    }
-    v->size--;
-}
-
-int maze[M][N];
-
-void generate_maze()
-{
-    // 初始化墙和矩阵
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            maze[i][j] = WALL;
+    pGraph graph = (pGraph)malloc(sizeof(Graph));
+    graph->_edgeNum = 0;
+    graph->_vertexNum = vertexNum;
+    graph->_adjMatrix = (int **)malloc(sizeof(int *) * vertexNum);
+    graph->_vertexs = (pPoint *)malloc(sizeof(pPoint) * vertexNum);
+    for (int i = 0; i < vertexNum; i++) {
+        graph->_adjMatrix[i] = (int *)malloc(sizeof(int) * vertexNum);
+        graph->_vertexs[i] = (pPoint)malloc(sizeof(Point));
+        graph->_vertexs[i]->_x = i / 10;
+        graph->_vertexs[i]->_y = i % 10;
+        for (int j = 0; j < vertexNum; j++) {
+            graph->_adjMatrix[i][j] = 0;
         }
     }
-
-    // 将初始点添加到空地中，并将初始点的邻居添加到frontiers中
-    PointVector frontiers;
-    init_vector(&frontiers);
-    int x = 1;
-    int y = 1;
-    maze[x][y] = SPACE;
-    for (int i = 0; i < OFFSET_COUNT; i++) {
-        int nx = x + offsets[i][0] * 2;
-        int ny = y + offsets[i][1] * 2;
-        if (nx >= 0 && nx < M && ny >= 0 && ny < N) {
-            maze[nx][ny] = FRONTIER;
-            push_back(&frontiers, nx, ny);
-        }
-    }
-
-    // 随机种子
-    srand((unsigned)time(NULL));
-
-    // 当frontiers不为空时，取一个随机点
-    while (frontiers.size > 0) {
-        int r = rand() % frontiers.size;
-        x = frontiers.data[r].x, y = frontiers.data[r].y;
-        erase(&frontiers, r);
-
-        maze[x][y] = SPACE;
-
-        for (int i = 0; i < OFFSET_COUNT; i++) {
-            int nx = x + offsets[i][0] * 2;
-            int ny = y + offsets[i][1] * 2;
-            if (nx >= 0 && nx < M && ny >= 0 && ny < N) {
-                if (maze[nx][ny] == WALL) {
-                    maze[nx - offsets[i][0]][ny - offsets[i][1]] = SPACE; // 后一步操作
-                    maze[nx][ny] = FRONTIER;
-                    push_back(&frontiers, nx, ny);
-                }
-            }
-        }
-    }
+    return graph;
 }
 
-void print_maze()
+void printGraph(pGraph graph)
 {
-    int i, j;
-    for (i = 0; i < M + 2; i++) {
-        for (j = 0; j < N + 2; j++) {
-            if (i == 0 || i == M + 1 || j == 0 || j == N + 1) {
-                printf("█"); // 打印墙壁
-                continue;
-            }
-            if (maze[i - 1][j - 1] == WALL)
-                printf("█");
-            else
-                printf(" ");
+    int vertexNum = graph->_vertexNum;
+    int **adjMatrix = graph->_adjMatrix;
+    for (int i = 0; i < vertexNum; i++) {
+        for (int j = 0; j < vertexNum; j++) {
+            printf("%d ", adjMatrix[i][j]);
         }
         printf("\n");
     }
 }
 
+void addEdge(pGraph graph, pEdge edge)
+{
+    int row = edge->_row;
+    int col = edge->_col;
+    graph->_adjMatrix[row][col] = GRAPH_EXIST_EDGE;
+    graph->_adjMatrix[col][row] = GRAPH_EXIST_EDGE;
+    graph->_edgeNum++;
+}
+
+void removeEdge(pGraph graph, pEdge edge)
+{
+    int row = edge->_row;
+    int col = edge->_col;
+    graph->_adjMatrix[row][col] = GRAPH_NO_EDGE;
+    graph->_adjMatrix[col][row] = GRAPH_NO_EDGE;
+    graph->_edgeNum--;
+}
+
+// 初始化迷宫
+pMaze initMaze(int row, int col)
+{
+    pMaze maze = (pMaze)malloc(sizeof(Maze));
+    maze->_row = row;
+    maze->_col = col;
+    maze->_graph = createGraph(row * col);
+    return maze;
+}
+
+// 打印迷宫，注意边界
+void printMaze(pMaze maze, FILE *fp)
+{
+    int row = maze->_row;
+    int col = maze->_col;
+    int **adjMatrix = maze->_graph->_adjMatrix;
+
+    for (int i = 0; i < row; i++) {
+        fprintf(fp, "+");
+        for (int j = 0; j < col; j++) {
+            fprintf(fp, "---+");
+        }
+        fprintf(fp, "\n");
+
+        fprintf(fp, "|");
+        for (int j = 0; j < col; j++) {
+            // 检查当前位置和右侧位置之间是否有边
+            if (j < col - 1 && adjMatrix[i * col + j][i * col + j + 1] == GRAPH_NO_EDGE) {
+                fprintf(fp, "   |");
+            } else {
+                fprintf(fp, "   ");
+            }
+        }
+        fprintf(fp, "|");
+        fprintf(fp, "\n");
+    }
+
+    fprintf(fp, "+");
+    for (int j = 0; j < col; j++) {
+        fprintf(fp, "---+");
+    }
+    fprintf(fp, "\n");
+}
+
+// 图的Kruskal算法，最小生成树
+void kruskal(pGraph graph){
+    
+}
+
+
+// 测试迷宫的生成和打印（Kruskal算法）
 int main()
 {
-    generate_maze();
-    print_maze();
+    srand(time(NULL));
+    pMaze maze = initMaze(MAX_ROW, MAX_COL);
+    createMazeInKruskal(maze);
+    printGraph(maze->_graph);
+    printMaze(maze, stdout);
     return 0;
 }
