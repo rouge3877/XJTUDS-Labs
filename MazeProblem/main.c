@@ -67,28 +67,7 @@ int main(int argc, char *argv[])
     }
 
     // 初始化迷宫
-    pMaze maze = initMaze(MAX_ROW, MAX_COL);
-    // 给定起点和终点
-    Position start = {start_row, start_col};
-    Position destination = {destination_row, destination_col};
-    giveMazeStart(maze, &start);
-    giveMazeDestination(maze, &destination);
-    // 判断起点和终点是否合法
-    if (!verifyStartAndDestination(maze)) {
-        destoryMaze(maze);
-        exit(1);
-    }
-
-    // 生成迷宫
-    createMaze(maze, 0);
-    printMaze(maze, output);
-    // 找到迷宫路径
-    findMazePath(maze, &start, &destination);
-    printMazePath(maze, &start, &destination, output);
-
-    // 释放迷宫
-    destoryMaze(maze);
-    fclose(output);
+    
 
     return 0;
 }
