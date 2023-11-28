@@ -1,29 +1,40 @@
 #include "count.h"
 
-// 统计文件中各个字符以及其出现的次数
-CharInfo *CountChar(FILE *fp,int length) {
-    CharInfo *char_list = (CharInfo *) malloc(sizeof(CharInfo) * length);
-    for (int i = 0; i < MAX_CHAR; ++i) {
+// 统计文件中各个字符以及其出现的次数, 返回的是一个数组，数组的下标为字符的ASCII码，数组的值为字符出现的次数，如果出现为零则不体现在数组中
+CharInfo *CountChar(FILE *fp, int *length)
+{
+    *length = 0;
+    int diff_char_num = 0;
+    CharInfo *char_list = (CharInfo *)malloc(sizeof(CharInfo) * MAX_CHAR);
+    for (int i = 0; i < MAX_CHAR; i++) {
         char_list[i]._char = i;
         char_list[i]._frequency = 0;
     }
     ORIGINAL_DATA_TYPE ch;
     while ((ch = fgetc(fp)) != EOF) {
+        if(char_list[ch]._frequency == 0)
+            diff_char_num++;
+        
+        (*length)++;
         char_list[ch]._frequency++;
     }
-    return char_list;
-}
 
-// 统计文件字符个数
-int CountCharNum(FILE *fp) {
-    int count = 0;
-    ORIGINAL_DATA_TYPE ch;
-    while ((ch = fgetc(fp)) != EOF) {
-        count++;
-    }
-    if(count == 0) {
-        fprintf(stderr,"Input File is empty\n");
+    if (*length == 0) {
+        fprintf(stderr, "Input File is empty\n");
         exit(0);
     }
-    return count;
+
+    CharInfo *ret_list = (CharInfo *)malloc(sizeof(CharInfo) * diff_char_num);
+    int index = 0;
+    for (int i = 0; i < MAX_CHAR; i++) {
+        if (char_list[i]._frequency != 0) {
+            ret_list[index]._char = char_list[i]._char;
+            ret_list[index]._frequency = char_list[i]._frequency;
+            index++;
+        }
+    }
+    
+    free(char_list);
+    *length = diff_char_num;
+    return ret_list;
 }

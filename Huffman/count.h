@@ -15,9 +15,6 @@ typedef struct Info {
 } CharInfo;
 
 // 统计文件中各个字符以及其出现的次数
-CharInfo *CountChar(FILE *fp, int length);
-
-// 统计文件字符个数
-int CountCharNum(FILE *fp);
+CharInfo *CountChar(FILE *fp, int* length);
 
 #endif

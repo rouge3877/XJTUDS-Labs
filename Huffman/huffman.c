@@ -31,7 +31,9 @@ Huffman createHuffmanTree(CharInfo *char_list, int size)
         right->_parents = parents;
         pushHeap(minHeap, parents);
     }
-    return minHeap->_heap[0];
+    Huffman ret = popHeap(minHeap);
+    destroyMinHeap(minHeap);
+    return ret;
 }
 
 void destroyHuffmanTree(Huffman root)
