@@ -1,4 +1,4 @@
-#include "huffman.h"
+#include "encode.h"
 
 // 提供帮助
 void printHelp(FILE *output)
@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     char *input_path = getAbsolutePath(argv[2]);
-    free(input_path);
     FILE *in = fopen(input_path, "rb");
+    free(input_path);
     if (!in) {
         perror("Unable to open <input> file\n");
         exit(EXIT_FAILURE);

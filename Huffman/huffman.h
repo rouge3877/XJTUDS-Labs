@@ -3,25 +3,23 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <string.h>
 
-#define MAX_CHAR 256
+#include "heap.h"
+#include "node.h"
 
-typedef struct Node {
-    unsigned char symbol;
-    int freq;
-    struct Node *left, *right;
-} Node;
+// 创建节点
+pHuffmanNode createHuffmanNode(CharInfo element, int frequnecy);
 
-typedef struct {
-    Node* data[MAX_CHAR];
-    int count;
-} Heap;
+// 销毁节点
+void destroyHuffmanNode(pHuffmanNode node);
 
-void Huffman_Compress(FILE *input, FILE *output);
+// 创建哈夫曼树
+Huffman createHuffmanTree(CharInfo *char_list, int size);
 
-void Huffman_Uncompress(FILE *input, FILE *output);
+// 销毁哈夫曼树
+void destroyHuffmanTree(Huffman root);
+
+// 非递归寻找最大深度
+int findMaxDepth(Huffman root);
 
 #endif

@@ -1,52 +1,56 @@
 #include "huffman.h"
 
-// Helper Functions 
-
-Heap* createHeap() {
-    Heap* h = (Heap*) malloc(sizeof(Heap));
-    h->count = 0;
-    return h;
+pHuffmanNode createHuffmanNode(CharInfo element, int frequnecy)
+{
+    pHuffmanNode node = (pHuffmanNode)malloc(sizeof(HuffmanNode));
+    node->_data = element;
+    node->_left = NULL;
+    node->_right = NULL;
+    node->_parents = NULL;
+    return node;
 }
 
-void insertHeap(Heap* h, Node* node) {
-    h->data[h->count] = node;
-    h->count++;
+void destroyHuffmanNode(pHuffmanNode node)
+{
+    free(node);
 }
 
-Node* removeHeap(Heap* h) {
-    int i, idx;
-    Node* temp, *x;
-    x = h->data[0];
-    h->data[0] = h->data[h->count - 1];
-    h->count--;
-    temp = h->data[0];
-    i = 0;
+Huffman createHuffmanTree(CharInfo *char_list, int size)
+{
+    pMinHeap minHeap = initMinHeap(size);
+    for (int i = 0; i < size; i++)
+        pushHeap(minHeap, createHuffmanNode(char_list[i], char_list[i]._frequency));
 
-    // Heapify Down
-    while (true) {
-        idx = (i * 2) + 1;
-        if ((idx < h->count) && (h->data[idx]->freq < temp->freq)) {
-            if ((idx + 1 < h->count) && (h->data[idx + 1]->freq < h->data[idx]->freq)) {
-                idx++;
-            }
-        } else if ((idx + 1 < h->count) && (h->data[idx + 1]->freq < temp->freq)) {
-            idx++;
-        } else {
-            break;
-        }
-        h->data[i] = h->data[idx];
-        i = idx;
+    while (minHeap->_size > 1) {
+        pHuffmanNode left = popHeap(minHeap);
+        pHuffmanNode right = popHeap(minHeap);
+        pHuffmanNode parents = createHuffmanNode(char_list[0], left->_data._frequency + right->_data._frequency);
+        parents->_left = left;
+        parents->_right = right;
+        left->_parents = parents;
+        right->_parents = parents;
+        pushHeap(minHeap, parents);
     }
-    h->data[i] = temp;
-    return x;
+    return minHeap->_heap[0];
 }
 
-void Huffman_Compress(FILE *input, FILE *output) {
-    // TODO: Fill this function
-    // You need to read the file, create a frequency array, create Huffman tree, and write the encoded data to the file 
+void destroyHuffmanTree(Huffman root)
+{
+    if (root->_left != NULL) {
+        destroyHuffmanTree(root->_left);
+    }
+    if (root->_right != NULL) {
+        destroyHuffmanTree(root->_right);
+    }
+    destroyHuffmanNode(root);
 }
 
-void Huffman_Uncompress(FILE *input, FILE *output) {
-    // TODO: Fill this function
-    // You should read the file, read the Huffman Tree, and decode the data, then write it to the file
+int findMaxDepth(Huffman root)
+{
+    if (root == NULL) {
+        return 0;
+    }
+    int left = findMaxDepth(root->_left);
+    int right = findMaxDepth(root->_right);
+    return left > right ? left + 1 : right + 1;
 }
