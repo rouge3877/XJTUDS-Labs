@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define BUFFER_MAX_FILE_SIZE 10240
+
 // 哈夫曼编码结构
 typedef struct Code {
     ORIGINAL_DATA_TYPE _data;
