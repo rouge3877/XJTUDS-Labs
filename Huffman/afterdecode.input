@@ -1,0 +1,117 @@
+index!2?
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not x!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+find 1
+decode over
+
+=================================================================
+==24350==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 960 byte(s) in 30 object(s) allocated from:
+    #0 0x7f6084bab887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x557570621d4d in insertHashTable (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x4d4d)
+    #2 0x5575706243ab in create_hash_table (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x73ab)
+    #3 0x557570624b60 in Huffman_Uncompress (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x7b60)
+    #4 0x557570623b36 in main (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x6b36)
+    #5 0x7f60848f8d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+
+Indirect leak of 1139 byte(s) in 56 object(s) allocated from:
+    #0 0x7f6084bab887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x557570621d93 in insertHashTable (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x4d93)
+    #2 0x5575706243ab in create_hash_table (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x73ab)
+    #3 0x557570624b60 in Huffman_Uncompress (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x7b60)
+    #4 0x557570623b36 in main (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x6b36)
+    #5 0x7f60848f8d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+
+Indirect leak of 832 byte(s) in 26 object(s) allocated from:
+    #0 0x7f6084bab887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x557570621d4d in insertHashTable (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x4d4d)
+    #2 0x5575706243ab in create_hash_table (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x73ab)
+    #3 0x557570624b60 in Huffman_Uncompress (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x7b60)
+    #4 0x557570623b36 in main (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x6b36)
+    #5 0x7f60848f8d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+
+SUMMARY: AddressSanitizer: 2931 byte(s) leaked in 112 allocation(s).
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+not find
+index!2?
+find 1
+decode over
+
+=================================================================
+==24350==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 960 byte(s) in 30 object(s) allocated from:
+    #0 0x7f6084bab887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x557570621d4d in insertHashTable (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x4d4d)
+    #2 0x5575706243ab in create_hash_table (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x73ab)
+    #3 0x557570624b60 in Huffman_Uncompress (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x7b60)
+    #4 0x557570623b36 in main (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x6b36)
+    #5 0x7f60848f8d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+
+Indirect leak of 1139 byte(s) in 56 object(s) allocated from:
+    #0 0x7f6084bab887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x557570621d93 in insertHashTable (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x4d93)
+    #2 0x5575706243ab in create_hash_table (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x73ab)
+    #3 0x557570624b60 in Huffman_Uncompress (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x7b60)
+    #4 0x557570623b36 in main (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x6b36)
+    #5 0x7f60848f8d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+
+Indirect leak of 832 byte(s) in 26 object(s) allocated from:
+    #0 0x7f6084bab887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x557570621d4d in insertHashTable (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x4d4d)
+    #2 0x5575706243ab in create_hash_table (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x73ab)
+    #3 0x557570624b60 in Huffman_Uncompress (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x7b60)
+    #4 0x557570623b36 in main (/home/rouge/cpp-repo/XJTUDS-Labs/Huffman/huffman_debug+0x6b36)
+    #5 0x7f60848f8d8f in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+
+SUMMARY: AddressSanitizer: 2931 byte(s) leaked in 112 allocation(s).

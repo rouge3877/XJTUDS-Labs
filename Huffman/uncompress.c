@@ -27,39 +27,6 @@ CodeKey2Value *readCodeTable(FILE *input, int size)
     return code_table;
 }
 
-// 对编码表按照编码长度进行排序(使用快速排序)
-void sortCodeTable(CodeKey2Value *code_table, int left, int right)
-{
-    if (left >= right) {
-        return;
-    }
-    int i = left, j = right;
-    CodeKey2Value temp = code_table[left];
-    while (i < j) {
-        while (i < j && code_table[j]->_length >= temp->_length) {
-            j--;
-        }
-        code_table[i] = code_table[j];
-        while (i < j && code_table[i]->_length <= temp->_length) {
-            i++;
-        }
-        code_table[j] = code_table[i];
-    }
-    code_table[i] = temp;
-    sortCodeTable(code_table, left, i - 1);
-    sortCodeTable(code_table, i + 1, right);
-}
-
-// 比较两个数组是否相等（在length范围内）
-bool cmpArray(bool *array1, bool *array2, int length)
-{
-    for (int i = 0; i < length; i++) {
-        if (array1[i] != array2[i])
-            return false;
-    }
-    return true;
-}
-
 // 合并两个数组，将small_array合并到big_array中，其中会从big_array的big_index开始
 void mergeArray(bool *big_array, bool *small_array, int length, int big_index)
 {
@@ -79,25 +46,41 @@ bool *byte2BoolList(__uint8_t byte)
     return bool_list;
 }
 
+// hash
+void create_hash_table(HashTable *my_hash_table, CodeKey2Value *code_table, int size)
+{
+    for (int i = 0; i < size; i++) {
+        HashKey hash_key;
+        hash_key._length = code_table[i]->_length;
+        hash_key._code = code_table[i]->_code;
+        insertHashTable(hash_key, code_table[i]->_data, my_hash_table);
+    }
+}
+
 // Huffman 解压缩，注意正文部分是按字节写入的
 void Huffman_Uncompress(FILE *input, FILE *output)
 {
-    __uint8_t byte;
-    while (fread(&byte, sizeof(unsigned char), 1, input) == 1) {
-        // 打印该字节每一位的值
-        bool *bool_list = byte2BoolList(byte);
-        for(int i=0;i<8;i++){
-            printf("%d",bool_list[i]);
-        }
-    }
-    rewind(input);
-
-    // 读取原始文件不同字符个数
     int text_diff_char_num;
     fread(&text_diff_char_num, sizeof(int), 1, input);
     printf("the text origin has %d different word\n", text_diff_char_num);
+    int text_ch_num;
+    fread(&text_ch_num, sizeof(int), 1, input);
+    printf("the text origin has %d word\n", text_ch_num);
     // 读取哈夫曼编码表
     CodeKey2Value *code_table = readCodeTable(input, text_diff_char_num);
+
+    // printf("Here is the context:");
+    // __uint8_t byte;
+    // while (fread(&byte, 1, 1, input) == 1) {
+    //     // 打印该字节每一位的值
+    //     bool *bool_list = byte2BoolList(byte);
+    //     for (int i = 0; i < 8; i++) {
+    //         printf("%d", bool_list[i]);
+    //     }
+    //     free(bool_list);
+    // }
+    // rewind(input);
+    // printf("\nfinish!\n\n");
 
     // 打印编码表查看正确性--------------------------------------------------------------
     for (int i = 0; i < text_diff_char_num; i++) {
@@ -107,17 +90,17 @@ void Huffman_Uncompress(FILE *input, FILE *output)
         }
         printf("\n");
     }
-    // 对编码表按照编码长度进行排序
-    sortCodeTable(code_table, 0, text_diff_char_num - 1);
-    printf("after sort\n");
-    // 打印编码表查看正确性
-    for (int i = 0; i < text_diff_char_num; i++) {
-        printf("<Huffman_Uncompress>char:%c(%d)->length%d  and CODEis : ", code_table[i]->_data, code_table[i]->_data, code_table[i]->_length);
-        for (int j = 0; j < code_table[i]->_length; j++) {
-            printf("%d", code_table[i]->_code[j]);
-        }
-        printf("\n\n");
-    }
+    // // 对编码表按照编码长度进行排序
+    // sortCodeTable(code_table, 0, text_diff_char_num - 1);
+    // printf("after sort\n");
+    // // 打印编码表查看正确性
+    // for (int i = 0; i < text_diff_char_num; i++) {
+    //     printf("<Huffman_Uncompress>char:%c(%d)->length%d  and CODEis : ", code_table[i]->_data, code_table[i]->_data, code_table[i]->_length);
+    //     for (int j = 0; j < code_table[i]->_length; j++) {
+    //         printf("%d", code_table[i]->_code[j]);
+    //     }
+    //     printf("\n\n");
+    // }
     // -----------------------------------------------------------------------------------
 
     // 寻找最大编码长度
@@ -128,20 +111,80 @@ void Huffman_Uncompress(FILE *input, FILE *output)
     }
     printf("\nmax_code_length is %d\n", max_code_length);
 
-    // TODO: read in bit------------------------------------------
-    bool *buffer_read = (bool *)malloc(sizeof(bool) * max_code_length);
-    __uint8_t byte_read;
-    while (fread(&byte_read, sizeof(__uint8_t), 1, input) == 1) {
-        // 解码时需要建立一个哈希表，一个从length和code array 到char 的哈希表。
-        // 然后每次读入一个bit，然后在哈希表中查找，如果找到了，就输出，然后清空buffer，继续读入bit。
+    // 建立一个哈希表，一个从length和code array 到char 的哈希表。
+    HashTable my_hash_table[HASH_TABLE_SIZE];
+    create_hash_table(my_hash_table, code_table, text_diff_char_num);
+
+    // 先将所有的编码读入到一个buffer中
+    bool *read_buffer = (bool *)malloc(sizeof(bool) * BUFFER_MAX_FILE_SIZE * max_code_length + 8);
+    int buffer_index = 0;
+    __uint8_t byte;
+    while (fread(&byte, 1, 1, input) == 1) {
+        // 打印该字节每一位的值
+        bool *bool_list = byte2BoolList(byte);
+        for (int i = 0; i < 8; i++) {
+            read_buffer[buffer_index++] = bool_list[i];
+        }
+        free(bool_list);
+    }
+    if (feof(input))
+        printf("文件已经读取完毕\n");
+    else
+        printf("发生其他错误\n");
+
+    // 打印buffer
+    printf("buffer is :\n");
+    for (int i = 0; i < buffer_index; i++) {
+        printf("%d", read_buffer[i]);
+    }
+    printf("\n");
+
+    // 从buffer中读取编码,开始处理buffer
+    int buffer_read_index = 0;
+    int decode_num = 0;
+    int this_length = 1;
+    bool *this_list = read_buffer;
+    // 开始解码
+    while (true) {
+        // 从哈希表中查找
+        HashKey hash_key;
+        hash_key._length = this_length;
+        hash_key._code = this_list;
+        ORIGINAL_DATA_TYPE hash_value = searchHashTable(hash_key, my_hash_table);
+        if (hash_value != 0) {
+            // 找到了
+            printf("find %c\n", hash_value);
+            fwrite(&hash_value, sizeof(ORIGINAL_DATA_TYPE), 1, output);
+            decode_num++;
+            if (decode_num == text_ch_num) {
+                printf("decode over\n");
+                break;
+            }
+            buffer_read_index++;
+            // 重置
+            this_length = 1;
+            this_list = read_buffer + buffer_read_index;
+        } else {
+            // 没找到
+            printf("not find\n");
+            this_length++;
+            buffer_read_index++;
+        }
+
+        // 判断是否读取完毕(超限)
+        if (buffer_read_index >= buffer_index) {
+            printf("buffer is over\n");
+            break;
+        }
     }
 
-    printf("Here!!");
-    if (feof(input)) {
-        printf("文件已经读取完毕\n");
-    } else {
-        printf("发生其他错误\n");
+    // 释放内存
+    for (int i = 0; i < text_diff_char_num; i++) {
+        free(code_table[i]->_code);
+        free(code_table[i]);
     }
+    free(code_table);
+    free(read_buffer);
 
     return;
 }

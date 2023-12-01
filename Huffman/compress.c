@@ -39,7 +39,7 @@ void destroyCodeTable(CodeKey2Value *code_table, int size)
 }
 
 // 将表扩展为256以方便寻表。哈希表的思想
-CodeKey2Value *expandCodeTable(CodeKey2Value *small_table, int size)
+CodeKey2Value *expandCodeTable(CodeKey2Value *small_table, int table_size)
 {
     CodeKey2Value *expand_table = (CodeKey2Value *)malloc(sizeof(CodeKey2Value) * MAX_CHAR);
 
@@ -51,7 +51,7 @@ CodeKey2Value *expandCodeTable(CodeKey2Value *small_table, int size)
 
         expand_table[i]->_code = NULL;
     }
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < table_size; i++) {
         expand_table[small_table[i]->_data]->_length = small_table[i]->_length;
         expand_table[small_table[i]->_data]->_code = small_table[i]->_code;
     }
@@ -65,16 +65,22 @@ CodeKey2Value *expandCodeTable(CodeKey2Value *small_table, int size)
     return expand_table;
 }
 
-// 将编码表写入（先写入编码表的大小，再写入编码表）
-void writeCodeTable(FILE *output, CodeKey2Value *code_table, int size)
+// 将编码表写入（先写入编码表的大小，然后是总字符数，再写入编码表）
+void writeCodeTable(FILE *output, CodeKey2Value *code_table, int table_size, int text_ch_num)
 {
     // 写入原始文件字符个数，虽然存在端序问题，但是实际上写入和读取操作都会使用相同的端序。因此无需考虑  printf("%d", text_diff_char_num);
-    size_t elements_written = fwrite(&size, sizeof(int), 1, output);
+    size_t elements_written = fwrite(&table_size, sizeof(int), 1, output);
     if (elements_written != 1) {
         fprintf(stderr, "Have wrong when writting in the output file!\n");
         exit(0);
     }
-    for (int i = 0; i < size; i++) {
+    elements_written = fwrite(&text_ch_num, sizeof(int), 1, output);
+    if (elements_written != 1) {
+        fprintf(stderr, "Have wrong when writting in the output file!\n");
+        exit(0);
+    }
+
+    for (int i = 0; i < table_size; i++) {
         size_t elements_written = fwrite(&code_table[i]->_data, sizeof(ORIGINAL_DATA_TYPE), 1, output);
         if (elements_written != 1) {
             fprintf(stderr, "Have wrong when writting in the output file!\n");
@@ -87,13 +93,19 @@ void writeCodeTable(FILE *output, CodeKey2Value *code_table, int size)
             exit(0);
         }
 
+        printf("<compress>: %c(%d)->length:%d ", code_table[i]->_data, code_table[i]->_data, code_table[i]->_length);
+
         for (int j = 0; j < code_table[i]->_length; j++) {
             elements_written = fwrite(&code_table[i]->_code[j], sizeof(bool), 1, output);
             if (elements_written != 1) {
                 fprintf(stderr, "Have wrong when writting in the output file!\n");
                 exit(0);
             }
+
+            printf("%d", code_table[i]->_code[j]);
         }
+
+        printf("\n");
     }
 }
 
@@ -128,8 +140,9 @@ void Huffman_Compress(FILE *input, FILE *output)
 {
     // 统计文件字符个数
     int text_diff_char_num = 0;
+    int text_ch_num = 0;
     // 统计文件中各个字符以及其出现的次数
-    CharInfo *text_char_info = CountChar(input, &text_diff_char_num);
+    CharInfo *text_char_info = CountChar(input, &text_diff_char_num, &text_ch_num);
     // 创建哈夫曼树
     Huffman huffman = createHuffmanTree(text_char_info, text_diff_char_num);
     // 创建哈夫曼编码表
@@ -143,32 +156,45 @@ void Huffman_Compress(FILE *input, FILE *output)
 
     // 写入文件
     // 写入哈夫曼编码表
-    writeCodeTable(output, code_table, text_diff_char_num);
+    writeCodeTable(output, code_table, text_diff_char_num, text_ch_num);
 
     // 写入文件
     ORIGINAL_DATA_TYPE ch;
     CodeKey2Value *expand_table = expandCodeTable(code_table, text_diff_char_num);
     rewind(input);
 
-    // TODO: write in bit------------------------------------------
+    int max_code_length = -1;
+    for (int i = 0; i < text_diff_char_num; i++) {
+        if (code_table[i]->_length > max_code_length)
+            max_code_length = code_table[i]->_length;
+    }
+    printf("\nmax_code_length is %d\n", max_code_length);
 
-    int buffer_length = 0;
-    bool buffer[8] = {0};
-    int index = 0;
-    while (fread(&ch, sizeof(ORIGINAL_DATA_TYPE), 1, input)) {
-        while (index < expand_table[ch]->_length) {
-            buffer[buffer_length] = expand_table[ch]->_code[index];
-            buffer_length++;
-            index++;
-            if (buffer_length >= 8) {
-                __uint8_t byte = boolList2Byte(buffer);
-                writeByte(output, byte);
-                buffer_length = 0;
-                for (int i = 0; i < 8; i++) {
-                    buffer[i] = 0;
-                }
+    // 每读一个字符，就将其编码写入缓冲区
+    int buffer_index_upper = BUFFER_MAX_FILE_SIZE * sizeof(ORIGINAL_DATA_TYPE) * max_code_length + 8;
+    bool* read_buffer = (bool*)malloc(buffer_index_upper);
+    int buffer_index = 0;
+    while (fread(&ch, sizeof(ORIGINAL_DATA_TYPE), 1, input) == 1) {
+        for (int i = 0; i < expand_table[ch]->_length; i++) {
+            read_buffer[buffer_index] = expand_table[ch]->_code[i];
+            buffer_index++;
+            if (buffer_index == buffer_index_upper) {
+                fprintf(stderr, "The buffer is full!\n");
+                exit(0);
             }
         }
+    }
+
+    // 补齐缓冲区
+    int padding = 8 - buffer_index % 8;
+    for (int i = 0; i < padding; i++) {
+        read_buffer[buffer_index++] = 0;
+    }
+
+    // 将缓冲区中的编码写入文件
+    for (int i = 0; i < buffer_index; i += 8) {
+        __uint8_t byte = boolList2Byte(read_buffer + i);
+        writeByte(output, byte);
     }
 
     // 释放内存

@@ -1,7 +1,7 @@
 #include "count.h"
 
 // 统计文件中各个字符以及其出现的次数, 返回的是一个数组，数组的下标为字符的ASCII码，数组的值为字符出现的次数，如果出现为零则不体现在数组中
-CharInfo *CountChar(FILE *fp, int *length)
+CharInfo *CountChar(FILE *fp, int *length,int *text_ch_num)
 {
     *length = 0;
     int diff_char_num = 0;
@@ -35,6 +35,7 @@ CharInfo *CountChar(FILE *fp, int *length)
     }
     
     free(char_list);
+    *text_ch_num = *length;
     *length = diff_char_num;
     return ret_list;
 }
