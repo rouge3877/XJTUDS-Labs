@@ -2,11 +2,12 @@
 #define _HASH_H_
 
 #include "count.h"
-#include "uthash.h"
 #include <stdbool.h>
+#include <string.h>
 
-#define HASH_TABLE_SIZE MAX_CHAR*10
+#define HASH_TABLE_SIZE MAX_CHAR * 100
 #define HASH_INIT 5381
+#define DELETED ((bool *)-1)
 
 // 比较两个数组是否相等（在length范围内）
 bool cmpArray(bool *array1, bool *array2, int length);
@@ -19,8 +20,8 @@ typedef struct HashKey {
 typedef struct HashNode {
     HashKey key;
     ORIGINAL_DATA_TYPE value;
-    struct HashNode *next;
-} *HashTable;
+    bool isOccupied;
+} HashTable;
 
 unsigned long hash(HashKey key);
 

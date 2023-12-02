@@ -17,6 +17,11 @@ typedef struct Code {
     bool *_code;
 } HuffmanCode, *pHuffmanCode, *CodeKey2Value;
 
+typedef struct decodeHuffmanTree {
+    ORIGINAL_DATA_TYPE _data;
+    struct decodeHuffmanTree *_left, *_right;
+} DecodeHuffmanTree, *pDecodeHuffmanTree;
+
 void Huffman_Compress(FILE *input, FILE *output);
 
 void Huffman_Uncompress(FILE *input, FILE *output);

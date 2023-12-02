@@ -28,6 +28,18 @@ void createCodeTable(Huffman root, CodeKey2Value *code_table, int index, bool *c
     return;
 }
 
+void inorderTraversals(Huffman root)
+{
+    if (root == NULL) {
+        return;
+    }
+    inorderTraversals(root->_left);
+    if (root->_left == NULL && root->_right == NULL) {
+        printf("%c(%d)\n", root->_data._char, root->_data._char);
+    }
+    inorderTraversals(root->_right);
+}
+
 // 释放哈夫曼编码表
 void destroyCodeTable(CodeKey2Value *code_table, int size)
 {
@@ -145,6 +157,7 @@ void Huffman_Compress(FILE *input, FILE *output)
     CharInfo *text_char_info = CountChar(input, &text_diff_char_num, &text_ch_num);
     // 创建哈夫曼树
     Huffman huffman = createHuffmanTree(text_char_info, text_diff_char_num);
+    // inorderTraversals(huffman);
     // 创建哈夫曼编码表
     CodeKey2Value *code_table = (CodeKey2Value *)malloc(sizeof(CodeKey2Value) * text_diff_char_num);
     for (int i = 0; i < text_diff_char_num; i++) {
@@ -173,8 +186,10 @@ void Huffman_Compress(FILE *input, FILE *output)
     // 每读一个字符，就将其编码写入缓冲区
     int buffer_index_upper = BUFFER_MAX_FILE_SIZE * sizeof(ORIGINAL_DATA_TYPE) * max_code_length + 8;
     bool* read_buffer = (bool*)malloc(buffer_index_upper);
+    int count_size_before = 0;
     int buffer_index = 0;
     while (fread(&ch, sizeof(ORIGINAL_DATA_TYPE), 1, input) == 1) {
+        count_size_before++;
         for (int i = 0; i < expand_table[ch]->_length; i++) {
             read_buffer[buffer_index] = expand_table[ch]->_code[i];
             buffer_index++;
@@ -184,7 +199,7 @@ void Huffman_Compress(FILE *input, FILE *output)
             }
         }
     }
-
+    //printf("count_size_before***************************:%d\n", count_size_before);
     // 补齐缓冲区
     int padding = 8 - buffer_index % 8;
     for (int i = 0; i < padding; i++) {
@@ -192,11 +207,13 @@ void Huffman_Compress(FILE *input, FILE *output)
     }
 
     // 将缓冲区中的编码写入文件
+    int count_size_after = 0;
     for (int i = 0; i < buffer_index; i += 8) {
         __uint8_t byte = boolList2Byte(read_buffer + i);
         writeByte(output, byte);
+        count_size_after++;
     }
-
+    //printf("count_size_after***************************:%d\n", count_size_after);
     // 释放内存
     destroyCodeTable(code_table, text_diff_char_num);
     destroyHuffmanTree(huffman);
