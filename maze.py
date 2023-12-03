@@ -230,10 +230,36 @@ def display_maze_solve(maze, path=None):
 
     return image_output
 
+def help():
+    print("Usage: python3 maze.py <num_rows> <num_cols>")
+    print("       <num_rows> and <num_cols> must be positive integers,")
+    print("       and <num_rows> * <num_cols> must be greater than 1.")
+    print("       If no arguments are provided, the default maze size is 10x10.")
 
 def main():
-    num_rows = int(sys.argv[1])
-    num_cols = int(sys.argv[2])
+
+    if(len(sys.argv) != 3 and len(sys.argv) != 1):
+        print("Error: The number of arguments must be 2 or 0")
+        help()
+        return
+
+    if(len(sys.argv) == 1):
+        num_rows = 10
+        num_cols = 10
+    else:
+        if(not sys.argv[1].isdigit() or not sys.argv[2].isdigit()):
+            print("Error: Type of arguments <row> <col> must be integer")
+            help()
+            return
+        num_rows = int(sys.argv[1])
+        num_cols = int(sys.argv[2])
+        if(num_rows <= 1 or num_cols <= 1):
+            print("Error: Invalid maze dimensions")
+            print("Your input is: ", num_rows, num_cols)
+            help()
+            return
+        
+
 
     maze = generate_maze(num_rows, num_cols)
     image_output = display_maze(maze)
