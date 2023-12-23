@@ -12,3 +12,5 @@
 !*.output
 !.gitignore
 !*.py
+!*.png
+!*.jpg
